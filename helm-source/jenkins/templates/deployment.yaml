@@ -86,6 +86,16 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-argo
+                  key: password
+            - name: USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: jenkins-argo
+                  key: username
             - name: JAVA_OPTS
               value: "-Djenkins.install.runSetupWizard=false"
             - name: CASC_JENKINS_CONFIG
@@ -155,7 +165,8 @@ data:
     import hudson.security.*
     def instance = Jenkins.getInstance()
     println "--> creating local user 'admin'"
-    def password = System.getenv("PASS")
+    def USERNAME = System.getenv('USERNAME').toString().trim()
+    def PASSWORD = System.getenv("PASSWORD").toString().trim()
     def hudsonRealm = new HudsonPrivateSecurityRealm(false)
     hudsonRealm.createAccount('admin',"admin")
     instance.setSecurityRealm(hudsonRealm)
